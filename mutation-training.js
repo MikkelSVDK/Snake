@@ -1,3 +1,5 @@
+const clc = require('cli-color')
+
 const Network = require('./network/network')
 const World = require('./snake/world')
 
@@ -102,6 +104,9 @@ async function initGame(trainingDataSingleRef, display = false){
       console.clear()
       console.log(`score: ${world.score} | gen: ${globalGen} | heuristic: ${globalHeu.toFixed(4)} | mutation: ${mutations.toFixed(4)} | dataMutation: ${dataMutations.toFixed(4)}`)
       console.log(world.toString())
+
+      let netToDirectionBest = netToDirection.indexOf(Math.max.apply(0,netToDirection))
+      console.log(`walls:\nstraight: ${worldToNet[0]} | right: ${worldToNet[1]} | left: ${worldToNet[2]}\n\ndirection:\nleft: ${worldToNet[3]} | right: ${worldToNet[4]} | up: ${worldToNet[5]} | down: ${worldToNet[6]}\n\nfood:\nleft: ${worldToNet[7].toFixed(3)} | right: ${worldToNet[8].toFixed(3)} | up: ${worldToNet[9].toFixed(3)} | down: ${worldToNet[10].toFixed(3)}\n\nnet:\nstraight: ${netToDirectionBest == 0 ? clc.greenBright(netToDirection[0].toFixed(3)) : clc.red(netToDirection[0].toFixed(3))} | right: ${netToDirectionBest == 1 ? clc.greenBright(netToDirection[1].toFixed(3)) : clc.red(netToDirection[1].toFixed(3))} | left: ${netToDirectionBest == 2 ? clc.greenBright(netToDirection[2].toFixed(3)) : clc.red(netToDirection[2].toFixed(3))}`)
     }
 
     if(world.snake.lastFood + 2000 < Date.now()){

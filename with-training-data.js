@@ -1,3 +1,5 @@
+const clc = require('cli-color')
+
 const Network = require('./network/network')
 const World = require('./snake/world')
 
@@ -67,16 +69,20 @@ network.setLearningRate(0.3);
       console.clear()
       console.log(`top score: ${topScore} | score: ${world.score} | run: ${n + 1} | iterations: ${(n+1) * 500} | next run: ${((nextGen - Date.now()) / 1000).toFixed(1)}`)
       console.log(world.toString())
+      
+      let netToDirectionBest = netToDirection.indexOf(Math.max.apply(0,netToDirection))
+      console.log(`walls:\nstraight: ${worldToNet[0]} | right: ${worldToNet[1]} | left: ${worldToNet[2]}\n\ndirection:\nleft: ${worldToNet[3]} | right: ${worldToNet[4]} | up: ${worldToNet[5]} | down: ${worldToNet[6]}\n\nfood:\nleft: ${worldToNet[7].toFixed(3)} | right: ${worldToNet[8].toFixed(3)} | up: ${worldToNet[9].toFixed(3)} | down: ${worldToNet[10].toFixed(3)}\n\nnet:\nstraight: ${netToDirectionBest == 0 ? clc.greenBright(netToDirection[0].toFixed(3)) : clc.red(netToDirection[0].toFixed(3))} | right: ${netToDirectionBest == 1 ? clc.greenBright(netToDirection[1].toFixed(3)) : clc.red(netToDirection[1].toFixed(3))} | left: ${netToDirectionBest == 2 ? clc.greenBright(netToDirection[2].toFixed(3)) : clc.red(netToDirection[2].toFixed(3))}`)
 
-      if(nextGen < Date.now() || world.snake.lastFood + 2000 < Date.now())
+
+      if(nextGen < Date.now() || world.snake.lastFood + 4000 < Date.now())
         world.snake.dead = true
 
-      //await sleep(20)
+      await sleep(10)
     }
     if(world.score > topScore)
       topScore = world.score
 
-    if(nextGen > Date.now() && world.snake.lastFood + 2000 > Date.now()){
+    if(nextGen > Date.now() && world.snake.lastFood + 4000 > Date.now()){
       let i = trainingData.findIndex(i => 
         i.input[0] == worldToNet[0] &&
         i.input[1] == worldToNet[1] &&
