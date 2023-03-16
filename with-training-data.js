@@ -52,7 +52,7 @@ let network = new Network([11, 10, 3])
 network.setLearningRate(0.3);
 
 (async () => {
-  for(var n = 0; n < 100; n ++) {
+  for(var n = 0; n < 1000; n ++) {
     let nextGen = Date.now() + 30000
     for(var i = 0; i < 500; i ++) {
       const trainingItem = trainingData[Math.floor((Math.random() * trainingData.length))]

@@ -16,7 +16,7 @@ let network = new Network([11, 10, 3])
 network.setLearningRate(0.3);
 
 (async () => {
-  for(var n = 0; n < 100; n ++) {
+  while(globalHeu < 50){
     globalGen++
 
     globalTimeout = false
@@ -30,17 +30,17 @@ network.setLearningRate(0.3);
     await sleep(50)
     globalTimeout = false
     
-    initGame(trainingData, true)
+    initGame(trainingData, true, false)
   }
-  initGame(trainingData, true)
+  initGame(trainingData, true, false)
 })()
 
-function initMultibleGames(trainingDataMultible, count = 20) {
+function initMultibleGames(trainingDataMultible, count = 50) {
   let resolved = 0
   let games = []
   return new Promise((resolve) => {
     for (let i = 0; i < count; i++) {
-      initGame(trainingDataMultible).then(data => {
+      initGame(trainingDataMultible, false, !(i == 0)).then(data => {
         games.push(data)
         resolved++
 
@@ -51,9 +51,9 @@ function initMultibleGames(trainingDataMultible, count = 20) {
   })
 }
 
-async function initGame(trainingDataSingleRef, display = false){
+async function initGame(trainingDataSingleRef, display = false, mutate = true){
   let trainingDataSingle = JSON.parse(JSON.stringify(trainingDataSingleRef))
-  if(Math.random() < mutations){
+  if(Math.random() < mutations && mutate){
     mutations -= 0.00005
     if(Math.random() < dataMutations){
       dataMutations -= 0.0005
@@ -63,23 +63,11 @@ async function initGame(trainingDataSingleRef, display = false){
     let dataI = getRandomNumber(0, trainingDataSingle.length - 1)
     for (let i = 0; i < trainingDataSingle[dataI].input.length; i++) {
       let max = 0.005, min = -0.005
-      trainingDataSingle[dataI].input[i] = Math.random() < mutations ? 
-      Math.max(
-        Math.min(
-          trainingDataSingle[dataI].input[i] + (Math.random() * (max - min) + min)
-        , 1)
-      , 0)
-      : trainingDataSingle[dataI].input[i]
+      trainingDataSingle[dataI].input[i] = Math.random() < mutations ? Math.max(Math.min(trainingDataSingle[dataI].input[i] + (Math.random() * (max - min) + min), 1), 0) : trainingDataSingle[dataI].input[i]
     }
     for (let i = 0; i < trainingDataSingle[dataI].output.length; i++) {
       let max = 0.005, min = -0.005
-      trainingDataSingle[dataI].output[i] = Math.random() < mutations ? 
-      Math.max(
-        Math.min(
-          trainingDataSingle[dataI].output[i] + (Math.random() * (max - min) + min)
-        , 1)
-      , 0)
-      : trainingDataSingle[dataI].output[i]
+      trainingDataSingle[dataI].output[i] = Math.random() < mutations ? Math.max(Math.min(trainingDataSingle[dataI].output[i] + (Math.random() * (max - min) + min), 1), 0) : trainingDataSingle[dataI].output[i]
     }
   }
 
@@ -94,7 +82,7 @@ async function initGame(trainingDataSingleRef, display = false){
   }
   
   let world = new World(15, 40)
-  let worldToNet, netToDirection, lastScore, start = Date.now()
+  let worldToNet, netToDirection, lastScore = 0, start = Date.now()
   while(!globalTimeout && !world.snake.dead){
     network.activate(worldToNet = world.toNet())
     world.snake.setDirection(netToDirection = network.run())
@@ -109,7 +97,7 @@ async function initGame(trainingDataSingleRef, display = false){
       console.log(`walls:\nstraight: ${worldToNet[0]} | right: ${worldToNet[1]} | left: ${worldToNet[2]}\n\ndirection:\nleft: ${worldToNet[3]} | right: ${worldToNet[4]} | up: ${worldToNet[5]} | down: ${worldToNet[6]}\n\nfood:\nleft: ${worldToNet[7].toFixed(3)} | right: ${worldToNet[8].toFixed(3)} | up: ${worldToNet[9].toFixed(3)} | down: ${worldToNet[10].toFixed(3)}\n\nnet:\nstraight: ${netToDirectionBest == 0 ? clc.greenBright(netToDirection[0].toFixed(3)) : clc.red(netToDirection[0].toFixed(3))} | right: ${netToDirectionBest == 1 ? clc.greenBright(netToDirection[1].toFixed(3)) : clc.red(netToDirection[1].toFixed(3))} | left: ${netToDirectionBest == 2 ? clc.greenBright(netToDirection[2].toFixed(3)) : clc.red(netToDirection[2].toFixed(3))}`)
     }
 
-    if(world.snake.lastFood + 2000 < Date.now()){
+    if(world.snake.lastFood + 4000 < Date.now()){
       world.snake.dead = true
       heuristic -= 1
     }
@@ -120,12 +108,12 @@ async function initGame(trainingDataSingleRef, display = false){
       lastScore = world.score
     }
     
-    await sleep(10)
+    await sleep(0)
   }
 
-  heuristic += ((Date.now() - start) / 1000)
+  heuristic += ((Date.now() - start) / 10000)
 
-  if(world.snake.lastFood + 2000 > Date.now()){
+  if(world.snake.lastFood + 4000 > Date.now()){
     let i = trainingData.findIndex(i => 
       i.input[0] == worldToNet[0] &&
       i.input[1] == worldToNet[1] &&
@@ -166,5 +154,5 @@ function sleep(ms) {
 }
 
 function getRandomNumber(min, max) {
-  return Math.floor(Math.random() * (max - min) + min);
+  return Math.floor(Math.random() * (max - min) + min)
 }
